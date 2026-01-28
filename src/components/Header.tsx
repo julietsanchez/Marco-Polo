@@ -1,0 +1,32 @@
+"use client";
+
+interface HeaderProps {
+  onAdd: () => void;
+  onEditBalance: () => void;
+}
+
+export function Header({ onAdd, onEditBalance }: HeaderProps) {
+  return (
+    <header className="border-b border-slate-200 bg-white/80 backdrop-blur sticky top-0 z-10">
+      <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+        <h1 className="text-xl font-semibold text-slate-800">Shared Budget</h1>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onEditBalance}
+            className="px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition"
+          >
+            Editar saldo
+          </button>
+          <button
+            type="button"
+            onClick={onAdd}
+            className="px-4 py-1.5 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-lg transition"
+          >
+            Agregar
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+}
