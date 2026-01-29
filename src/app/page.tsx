@@ -171,10 +171,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <Header
-        onAdd={() => setModalAdd(true)}
-        onEditBalance={() => setModalBalance(true)}
-      />
+      <Header onAdd={() => setModalAdd(true)} />
       <main className="max-w-5xl mx-auto px-4 py-6">
         {loadingDashboard ? (
           <div className="py-12 text-center text-slate-500">Cargando dashboard…</div>

@@ -43,7 +43,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="bg-white rounded-lg shadow-md p-8">
           <h1 className="text-2xl font-bold text-slate-900 mb-2 text-center">
-            Shared Budget
+            Alarico
           </h1>
           <p className="text-slate-600 text-center mb-6">
             Inicia sesión para continuar

@@ -4,8 +4,8 @@ import "./globals.css";
 import { AppProviders } from "@/components/AppProviders";
 
 export const metadata: Metadata = {
-  title: "Shared Budget",
-  description: "MVP finanzas compartidas para 2 socios",
+  title: "Alarico",
+  description: "Finanzas compartidas para socios",
 };
 
 export default function RootLayout({

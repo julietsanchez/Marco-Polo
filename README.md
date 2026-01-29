@@ -62,7 +62,16 @@ Comprobación manual: levantar `npm run dev`, abrir `/?k=APP_SECRET`, agregar mo
 
 1. Conectar repo a Vercel.
 2. Configurar las mismas env vars en el proyecto.
-3. Deploy. La app es “privada por URL”; usar una URL difícil de adivinar o pasar siempre `?k=...`.
+3. Deploy. La app está protegida por **Supabase Auth** (login); no hace falta protección extra de Vercel.
+
+### Si sigue saliendo "Agregá ?k=APP_SECRET a la URL"
+
+Ese mensaje lo muestra **Vercel** (Deployment Protection), no este código. Para que desaparezca:
+
+1. **Vercel Dashboard** → tu proyecto → **Settings** → **Deployment Protection** (o **Security** → **Deployment Protection**).
+2. Desactivar protección para **Production** y también para **Preview** (los previews tienen su propia opción; si la URL es de una rama, suele ser preview).
+3. **Guardar** y esperar unos segundos. Probar en **ventana de incógnito** o **otro navegador** por si era caché.
+4. Si usás un dominio tipo `xxx-teal.vercel.app`, confirmá que ese proyecto es el que editaste y que el último deploy es de este repo.
 
 ## Uso
 
