@@ -1,34 +1,44 @@
+import { supabase } from "./supabase-client";
+
 export async function fetchApi<T>(
   path: string,
   opts: {
     method?: "GET" | "POST";
     body?: unknown;
-    apiKey: string | null;
     params?: Record<string, string>;
   }
 ): Promise<T> {
-  const { method = "GET", body, apiKey, params } = opts;
+  const { method = "GET", body, params } = opts;
 
-  if (!apiKey) {
-    throw new Error("Missing api key (?k=...)");
+  // Obtener token de sesión
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    throw new Error("No hay sesión activa. Por favor inicia sesión.");
   }
 
-  const url = new URL(path, typeof window !== "undefined" ? window.location.origin : "http://localhost:3000");
-  url.searchParams.set("k", apiKey);
+  const url = new URL(
+    path,
+    typeof window !== "undefined" ? window.location.origin : "http://localhost:3000"
+  );
   if (params) {
     for (const [k, v] of Object.entries(params)) {
       url.searchParams.set(k, v);
     }
   }
 
-  const headers: Record<string, string> = {};
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${session.access_token}`,
+  };
   if (body && method === "POST") {
     headers["Content-Type"] = "application/json";
   }
 
   const res = await fetch(url.toString(), {
     method,
-    headers: Object.keys(headers).length ? headers : undefined,
+    headers,
     body: body && method === "POST" ? JSON.stringify(body) : undefined,
   });
 
@@ -37,6 +47,14 @@ export async function fetchApi<T>(
     | T;
 
   if (!res.ok) {
+    // Si es 401, redirigir a login
+    if (res.status === 401) {
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
+      throw new Error("Sesión expirada. Por favor inicia sesión nuevamente.");
+    }
+
     const obj =
       data !== null && typeof data === "object" ? (data as Record<string, unknown>) : null;
     const err =

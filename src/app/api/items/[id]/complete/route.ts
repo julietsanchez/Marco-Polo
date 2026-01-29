@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase-server";
+import { getAuthenticatedUser } from "@/lib/api-auth";
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Verificar autenticación
+    const { user, error: authError } = await getAuthenticatedUser(req);
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: "Unauthorized", details: authError ?? "Authentication required" },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
 
     if (!id) {

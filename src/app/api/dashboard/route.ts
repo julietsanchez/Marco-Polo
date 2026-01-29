@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase-server";
+import { getAuthenticatedUser } from "@/lib/api-auth";
 import type { DashboardData } from "@/lib/types";
 
 export async function GET(req: NextRequest) {
   try {
+    // Verificar autenticación
+    const { user, error: authError } = await getAuthenticatedUser(req);
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: "Unauthorized", details: authError ?? "Authentication required" },
+        { status: 401 }
+      );
+    }
+
     const supabase = getSupabase();
     const { data: state, error: stateErr } = await supabase
       .from("app_state")

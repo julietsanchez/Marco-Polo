@@ -6,8 +6,8 @@ MVP de webapp de finanzas compartida para 2 socios. Dashboard + Historial, carga
 
 - **Next.js 15** (App Router) + TypeScript
 - **TailwindCSS**
-- **Supabase Postgres** (`@supabase/supabase-js`), solo server con `SERVICE_ROLE_KEY`
-- Sin auth en este MVP; protección básica con `APP_SECRET` (header `x-app-secret` o query `?k=...`).
+- **Supabase Postgres** (`@supabase/supabase-js`) con autenticación de usuarios
+- **Supabase Auth** para login y protección de rutas
 
 ## Env vars
 
@@ -16,8 +16,8 @@ Copiar `.env.local.example` a `.env.local` y completar:
 | Variable | Uso |
 |----------|-----|
 | `NEXT_PUBLIC_SUPABASE_URL` | URL del proyecto Supabase |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clave pública para autenticación del cliente |
 | `SUPABASE_SERVICE_ROLE_KEY` | Solo server; nunca en client |
-| `APP_SECRET` | Valor secreto para `x-app-secret` o `?k=...` |
 
 ## Base de datos (Supabase)
 
@@ -25,7 +25,7 @@ Copiar `.env.local.example` a `.env.local` y completar:
 2. En **SQL Editor**, ejecutar el contenido de `supabase/schema.sql`.
 3. Tablas: `app_state` (saldo), `items` (movimientos, recurrentes, a cobrar, a pagar).
 
-**Nota:** RLS y Auth no están activados en este MVP. Activar RLS y configurar políticas cuando se añada autenticación.
+**Nota:** La autenticación está implementada usando Supabase Auth. Los usuarios deben iniciar sesión para acceder a la aplicación.
 
 ## Desarrollo
 
@@ -35,7 +35,7 @@ cp .env.local.example .env.local   # completar con valores reales
 npm run dev
 ```
 
-Acceder a `http://localhost:3000?k=TU_APP_SECRET` (el valor de `APP_SECRET` en `.env.local`).
+Acceder a `http://localhost:3000/login` e iniciar sesión con las credenciales de usuario.
 
 ### Preview con tu proyecto MCP (`guiaslfdkflknkhwciib`)
 

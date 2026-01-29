@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase-server";
+import { getAuthenticatedUser } from "@/lib/api-auth";
 
 export async function GET(req: NextRequest) {
   try {
+    // Verificar autenticación
+    const { user, error: authError } = await getAuthenticatedUser(req);
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: "Unauthorized", details: authError ?? "Authentication required" },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(req.url);
     const kind = searchParams.get("kind") ?? "";
     const q = (searchParams.get("q") ?? "").trim();

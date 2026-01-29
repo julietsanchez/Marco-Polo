@@ -1,39 +1,66 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { supabase } from "@/lib/supabase-client";
+import type { User, Session } from "@supabase/supabase-js";
 
-type AppSecretContextValue = {
-  apiKey: string | null;
-  setApiKey: (k: string | null) => void;
+type AuthContextValue = {
+  user: User | null;
+  session: Session | null;
+  loading: boolean;
+  signOut: () => Promise<void>;
 };
 
-const AppSecretContext = createContext<AppSecretContextValue | null>(null);
+const AuthContext = createContext<AuthContextValue | null>(null);
 
-export function useAppSecret() {
-  const ctx = useContext(AppSecretContext);
-  if (!ctx) throw new Error("useAppSecret must be used within AppProviders");
+export function useAuth() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within AppProviders");
   return ctx;
 }
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
-  const searchParams = useSearchParams();
-  const q = searchParams.get("k");
-  const [override, setOverride] = useState<string | null>(null);
-  const apiKey = override ?? q;
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const pathname = usePathname();
 
-  const setApiKey = useCallback((k: string | null) => {
-    setOverride(k);
-  }, []);
+  useEffect(() => {
+    // Obtener sesión inicial
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
 
-  const value = useMemo<AppSecretContextValue>(
-    () => ({ apiKey, setApiKey }),
-    [apiKey, setApiKey]
+    // Escuchar cambios de autenticación
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+
+      // Redirigir a login si se cierra sesión y no está en login
+      if (!session && pathname !== "/login") {
+        router.push("/login");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [router, pathname]);
+
+  const signOut = useCallback(async () => {
+    await supabase.auth.signOut();
+    router.push("/login");
+  }, [router]);
+
+  const value = useMemo<AuthContextValue>(
+    () => ({ user, session, loading, signOut }),
+    [user, session, loading, signOut]
   );
 
-  return (
-    <AppSecretContext.Provider value={value}>
-      {children}
-    </AppSecretContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

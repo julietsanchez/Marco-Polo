@@ -1,29 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isValidAppSecret } from "@/lib/api-auth";
 
 export const config = {
-  matcher: ["/preview-secret", "/api/:path*"],
+  matcher: ["/api/:path*"],
 };
 
-export function middleware(req: NextRequest) {
-  const path = req.nextUrl.pathname;
-
-  if (path === "/preview-secret") {
-    const secret = process.env.APP_SECRET ?? "preview-secret";
-    const url = new URL("/", req.url);
-    url.searchParams.set("k", secret);
-    return NextResponse.redirect(url, 302);
-  }
-
-  if (path.startsWith("/api/")) {
-    if (isValidAppSecret(req)) {
-      return NextResponse.next();
-    }
-    return NextResponse.json(
-      { error: "Unauthorized", message: "Missing or invalid x-app-secret / ?k=" },
-      { status: 401 }
-    );
-  }
-
+export async function middleware(req: NextRequest) {
+  // El middleware solo protege las rutas API
+  // La autenticación se verifica en cada ruta API individualmente
+  // Las rutas de páginas se protegen en el cliente
   return NextResponse.next();
 }

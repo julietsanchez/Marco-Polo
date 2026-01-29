@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useAppSecret } from "@/components/AppProviders";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/components/AppProviders";
 import { Header } from "@/components/Header";
 import { DashboardCards } from "@/components/DashboardCards";
 import { HistoryTable } from "@/components/HistoryTable";
@@ -14,7 +15,8 @@ import type { DbItem } from "@/lib/types";
 const SEARCH_DEBOUNCE_MS = 300;
 
 export default function Home() {
-  const { apiKey } = useAppSecret();
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [history, setHistory] = useState<DbItem[]>([]);
   const [loadingDashboard, setLoadingDashboard] = useState(true);
@@ -26,28 +28,34 @@ export default function Home() {
   const [historyQ, setHistoryQ] = useState("");
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Redirigir a login si no hay sesión
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/login");
+    }
+  }, [authLoading, user, router]);
+
   const loadDashboard = useCallback(async () => {
-    if (!apiKey) return;
+    if (!user) return;
     setLoadingDashboard(true);
     try {
-      const data = await fetchApi<DashboardData>("/api/dashboard", { apiKey });
+      const data = await fetchApi<DashboardData>("/api/dashboard", {});
       setDashboard(data);
     } catch (e) {
       console.error("Dashboard fetch failed:", e);
     } finally {
       setLoadingDashboard(false);
     }
-  }, [apiKey]);
+  }, [user]);
 
   const loadHistory = useCallback(async () => {
-    if (!apiKey) return;
+    if (!user) return;
     setLoadingHistory(true);
     try {
       const params: Record<string, string> = {};
       if (historyKind && historyKind !== "all") params.kind = historyKind;
       if (historyQ.trim()) params.q = historyQ.trim();
       const { items } = await fetchApi<{ items: DbItem[] }>("/api/history", {
-        apiKey,
         params,
       });
       setHistory(items);
@@ -56,11 +64,13 @@ export default function Home() {
     } finally {
       setLoadingHistory(false);
     }
-  }, [apiKey, historyKind, historyQ]);
+  }, [user, historyKind, historyQ]);
 
   useEffect(() => {
-    loadDashboard();
-  }, [loadDashboard]);
+    if (user) {
+      loadDashboard();
+    }
+  }, [loadDashboard, user]);
 
   useEffect(() => {
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
@@ -74,8 +84,10 @@ export default function Home() {
   }, [historyQInput]);
 
   useEffect(() => {
-    loadHistory();
-  }, [loadHistory]);
+    if (user) {
+      loadHistory();
+    }
+  }, [loadHistory, user]);
 
   const refresh = useCallback(() => {
     loadDashboard();
@@ -93,10 +105,8 @@ export default function Home() {
       status?: string;
       active?: boolean;
     }) => {
-      if (!apiKey) throw new Error("Missing api key");
       await fetchApi("/api/items", {
         method: "POST",
-        apiKey,
         body: {
           kind: data.kind,
           movement_type: data.kind === "movement" ? data.movement_type : undefined,
@@ -113,42 +123,40 @@ export default function Home() {
       });
       refresh();
     },
-    [apiKey, refresh]
+    [refresh]
   );
 
   const handleEditBalance = useCallback(
     async (balance: number) => {
-      if (!apiKey) throw new Error("Missing api key");
       await fetchApi("/api/balance", {
         method: "POST",
-        apiKey,
         body: { balance },
       });
       refresh();
     },
-    [apiKey, refresh]
+    [refresh]
   );
 
   const handleComplete = useCallback(
     async (id: string) => {
-      if (!apiKey) throw new Error("Missing api key");
       await fetchApi(`/api/items/${id}/complete`, {
         method: "POST",
-        apiKey,
       });
       refresh();
     },
-    [apiKey, refresh]
+    [refresh]
   );
 
-  if (!apiKey) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <p className="text-slate-600">
-          Agregá <code className="bg-slate-100 px-1 rounded">?k=APP_SECRET</code> a la URL.
-        </p>
+        <p className="text-slate-600">Cargando...</p>
       </div>
     );
+  }
+
+  if (!user) {
+    return null; // El useEffect redirigirá a login
   }
 
   const dashboardData: DashboardData = dashboard ?? {
