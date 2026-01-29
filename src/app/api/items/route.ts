@@ -8,7 +8,6 @@ const ItemSchema = z.object({
   movement_type: z.enum(["income", "expense"]).optional(),
   description: z.string().min(1),
   amount: z.number().positive(),
-  status: z.enum(["open", "done"]).optional(),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   note: z.string().optional().nullable(),
   active: z.boolean().optional().nullable(),
@@ -49,13 +48,12 @@ export async function POST(req: NextRequest) {
       movement_type: d.kind === "movement" ? d.movement_type : null,
       description: d.description,
       amount: d.amount,
-      status:
-        d.kind === "receivable" || d.kind === "payable"
-          ? d.status ?? "open"
-          : null,
       date: d.date,
       note: d.note ?? null,
-      active: d.kind === "recurring" ? (d.active ?? true) : null,
+      active:
+        d.kind === "recurring" || d.kind === "receivable" || d.kind === "payable"
+          ? (d.active ?? true)
+          : null,
     };
 
     const supabase = getSupabase();

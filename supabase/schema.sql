@@ -22,7 +22,6 @@ create table if not exists items (
   movement_type text check (movement_type in ('income', 'expense')),
   description text not null,
   amount numeric not null,
-  status text check (status in ('open', 'done')),
   date date not null,
   note text,
   active boolean,
@@ -31,7 +30,6 @@ create table if not exists items (
 
 create index if not exists idx_items_date_desc on items (date desc);
 create index if not exists idx_items_kind on items (kind);
-create index if not exists idx_items_status on items (status);
 
 -- NOTA: RLS y Auth no implementados en este MVP. Activar RLS y configurar políticas
 -- cuando se añada autenticación.

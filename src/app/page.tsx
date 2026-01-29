@@ -102,7 +102,6 @@ export default function Home() {
       amount: number;
       date: string;
       note?: string | null;
-      status?: string;
       active?: boolean;
     }) => {
       await fetchApi("/api/items", {
@@ -114,11 +113,12 @@ export default function Home() {
           amount: data.amount,
           date: data.date,
           note: data.note ?? null,
-          status:
-            data.kind === "receivable" || data.kind === "payable"
-              ? data.status ?? "open"
+          active:
+            data.kind === "recurring" ||
+            data.kind === "receivable" ||
+            data.kind === "payable"
+              ? (data.active ?? true)
               : undefined,
-          active: data.kind === "recurring" ? (data.active ?? true) : undefined,
         },
       });
       refresh();

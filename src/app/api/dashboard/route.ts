@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
       .from("items")
       .select("*")
       .eq("kind", "receivable")
-      .eq("status", "open")
+      .eq("active", true)
       .order("date", { ascending: false });
 
     if (recvErr) {
@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
       .from("items")
       .select("*")
       .eq("kind", "payable")
-      .eq("status", "open")
+      .eq("active", true)
       .order("date", { ascending: false });
 
     if (payErr) {

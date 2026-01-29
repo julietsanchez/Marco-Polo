@@ -47,7 +47,7 @@ export async function POST(
       );
     }
 
-    if (item.status === "done") {
+    if (item.active === false) {
       return NextResponse.json(
         { error: "Item already completed" },
         { status: 400 }
@@ -57,14 +57,14 @@ export async function POST(
     const amount = Number(item.amount);
     const desc = String(item.description);
 
-    const { error: statusErr } = await supabase
+    const { error: activeErr } = await supabase
       .from("items")
-      .update({ status: "done" })
+      .update({ active: false })
       .eq("id", id);
 
-    if (statusErr) {
+    if (activeErr) {
       return NextResponse.json(
-        { error: "Failed to update status", details: statusErr.message },
+        { error: "Failed to mark item completed", details: activeErr.message },
         { status: 500 }
       );
     }
@@ -78,7 +78,6 @@ export async function POST(
       movement_type: movementType,
       description: prefix + desc,
       amount,
-      status: null,
       date: today,
       note: null,
       active: null,
@@ -86,7 +85,7 @@ export async function POST(
 
     if (movErr) {
       return NextResponse.json(
-        { error: "Status updated but movement create failed", details: movErr.message },
+        { error: "Item marked completed but movement create failed", details: movErr.message },
         { status: 500 }
       );
     }
@@ -115,7 +114,7 @@ export async function POST(
     if (balErr) {
       return NextResponse.json(
         {
-          error: "Status and movement ok but balance update failed",
+          error: "Item and movement ok but balance update failed",
           details: balErr.message,
         },
         { status: 500 }

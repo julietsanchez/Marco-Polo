@@ -14,7 +14,6 @@ const BaseSchema = z.object({
   amount: z.coerce.number().positive("Monto mayor a 0"),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Fecha inválida"),
   note: z.string().optional().nullable(),
-  status: z.enum(["open", "done"]).optional(),
   active: z.boolean().optional(),
 });
 
@@ -47,7 +46,6 @@ export function ModalAdd({ onClose, onSubmit }: ModalAddProps) {
       amount: 0,
       date: today(),
       note: "",
-      status: "open",
       active: true,
     },
   });
@@ -161,19 +159,6 @@ export function ModalAdd({ onClose, onSubmit }: ModalAddProps) {
               <p className="mt-1 text-sm text-red-600">{errors.amount.message}</p>
             )}
           </div>
-
-          {(kind === "receivable" || kind === "payable") && (
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Estado</label>
-              <select
-                {...register("status")}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
-              >
-                <option value="open">Abierto</option>
-                <option value="done">Hecho</option>
-              </select>
-            </div>
-          )}
 
           {kind === "recurring" && (
             <div className="flex items-center gap-2">

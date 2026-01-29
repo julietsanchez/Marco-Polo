@@ -7,8 +7,6 @@ export type ItemKind =
 
 export type MovementType = "income" | "expense";
 
-export type ItemStatus = "open" | "done";
-
 export interface DbAppState {
   id: number;
   balance: number;
@@ -21,7 +19,6 @@ export interface DbItem {
   movement_type: MovementType | null;
   description: string;
   amount: number;
-  status: ItemStatus | null;
   date: string;
   note: string | null;
   active: boolean | null;

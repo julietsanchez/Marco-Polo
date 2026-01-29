@@ -96,7 +96,6 @@ export function HistoryTable({
                   <th className="text-left py-3 px-4 font-medium text-slate-600">Tipo</th>
                   <th className="text-left py-3 px-4 font-medium text-slate-600">Descripción</th>
                   <th className="text-right py-3 px-4 font-medium text-slate-600">Monto</th>
-                  <th className="text-left py-3 px-4 font-medium text-slate-600">Estado</th>
                 </tr>
               </thead>
               <tbody>
@@ -118,9 +117,6 @@ export function HistoryTable({
                         ? "-"
                         : ""}
                       {fmt(Math.abs(Number(i.amount)))}
-                    </td>
-                    <td className="py-3 px-4 text-slate-600">
-                      {i.status === "open" ? "Abierto" : i.status === "done" ? "Hecho" : "—"}
                     </td>
                   </tr>
                 ))}
