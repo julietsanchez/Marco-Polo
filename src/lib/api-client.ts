@@ -3,7 +3,7 @@ import { supabase } from "./supabase-client";
 export async function fetchApi<T>(
   path: string,
   opts: {
-    method?: "GET" | "POST";
+    method?: "GET" | "POST" | "PATCH" | "DELETE";
     body?: unknown;
     params?: Record<string, string>;
   }
@@ -32,14 +32,15 @@ export async function fetchApi<T>(
   const headers: Record<string, string> = {
     Authorization: `Bearer ${session.access_token}`,
   };
-  if (body && method === "POST") {
+  const sendsBody = method === "POST" || method === "PATCH";
+  if (body && sendsBody) {
     headers["Content-Type"] = "application/json";
   }
 
   const res = await fetch(url.toString(), {
     method,
     headers,
-    body: body && method === "POST" ? JSON.stringify(body) : undefined,
+    body: body && sendsBody ? JSON.stringify(body) : undefined,
   });
 
   const data = (await res.json().catch(() => ({}))) as

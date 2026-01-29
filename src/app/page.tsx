@@ -8,6 +8,7 @@ import { DashboardCards } from "@/components/DashboardCards";
 import { HistoryTable } from "@/components/HistoryTable";
 import { ModalAdd } from "@/components/ModalAdd";
 import { ModalEditBalance } from "@/components/ModalEditBalance";
+import { ModalEditItem } from "@/components/ModalEditItem";
 import { fetchApi } from "@/lib/api-client";
 import type { DashboardData } from "@/lib/types";
 import type { DbItem } from "@/lib/types";
@@ -23,6 +24,7 @@ export default function Home() {
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [modalAdd, setModalAdd] = useState(false);
   const [modalBalance, setModalBalance] = useState(false);
+  const [editItem, setEditItem] = useState<DbItem | null>(null);
   const [historyKind, setHistoryKind] = useState("all");
   const [historyQInput, setHistoryQInput] = useState("");
   const [historyQ, setHistoryQ] = useState("");
@@ -147,6 +149,51 @@ export default function Home() {
     [refresh]
   );
 
+  const handleEditItem = useCallback((item: DbItem) => {
+    setEditItem(item);
+  }, []);
+
+  const handleDeleteItem = useCallback(
+    async (id: string) => {
+      await fetchApi(`/api/items/${id}`, { method: "DELETE" });
+      refresh();
+    },
+    [refresh]
+  );
+
+  const handleEditItemSubmit = useCallback(
+    async (data: {
+      description: string;
+      amount: number;
+      date: string;
+      note?: string | null;
+      movement_type?: "income" | "expense";
+      active?: boolean;
+    }) => {
+      if (!editItem) return;
+      await fetchApi(`/api/items/${editItem.id}`, {
+        method: "PATCH",
+        body: {
+          description: data.description,
+          amount: data.amount,
+          date: data.date,
+          note: data.note ?? null,
+          ...(editItem.kind === "movement" && data.movement_type != null
+            ? { movement_type: data.movement_type }
+            : {}),
+          ...(editItem.kind === "recurring" ||
+          editItem.kind === "receivable" ||
+          editItem.kind === "payable"
+            ? { active: data.active ?? true }
+            : {}),
+        },
+      });
+      setEditItem(null);
+      refresh();
+    },
+    [editItem, refresh]
+  );
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
@@ -190,6 +237,8 @@ export default function Home() {
           q={historyQInput}
           onKindChange={setHistoryKind}
           onSearchChange={setHistoryQInput}
+          onEdit={handleEditItem}
+          onDelete={handleDeleteItem}
         />
       </main>
 
@@ -204,6 +253,13 @@ export default function Home() {
           currentBalance={dashboardData.balance}
           onClose={() => setModalBalance(false)}
           onSubmit={handleEditBalance}
+        />
+      )}
+      {editItem && (
+        <ModalEditItem
+          item={editItem}
+          onClose={() => setEditItem(null)}
+          onSubmit={handleEditItemSubmit}
         />
       )}
     </div>

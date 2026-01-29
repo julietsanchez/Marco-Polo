@@ -9,6 +9,8 @@ interface HistoryTableProps {
   q: string;
   onKindChange: (k: string) => void;
   onSearchChange: (q: string) => void;
+  onEdit: (item: DbItem) => void;
+  onDelete: (id: string) => void;
 }
 
 const KIND_OPTIONS = [
@@ -58,6 +60,8 @@ export function HistoryTable({
   q,
   onKindChange,
   onSearchChange,
+  onEdit,
+  onDelete,
 }: HistoryTableProps) {
   return (
     <section>
@@ -96,6 +100,7 @@ export function HistoryTable({
                   <th className="text-left py-3 px-4 font-medium text-slate-600">Tipo</th>
                   <th className="text-left py-3 px-4 font-medium text-slate-600">Descripción</th>
                   <th className="text-right py-3 px-4 font-medium text-slate-600">Monto</th>
+                  <th className="text-right py-3 px-4 font-medium text-slate-600">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -117,6 +122,28 @@ export function HistoryTable({
                         ? "-"
                         : ""}
                       {fmt(Math.abs(Number(i.amount)))}
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <div className="flex gap-2 justify-end">
+                        <button
+                          type="button"
+                          onClick={() => onEdit(i)}
+                          className="text-sm font-medium text-sky-600 hover:text-sky-700"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (window.confirm("¿Eliminar esta entrada?")) {
+                              onDelete(i.id);
+                            }
+                          }}
+                          className="text-sm font-medium text-red-600 hover:text-red-700"
+                        >
+                          Eliminar
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
